@@ -18,11 +18,17 @@ import { HomeComponent } from './home';
 import { AboutComponent } from './about';
 import { NoContentComponent } from './no-content';
 import { XLarge } from './home/x-large';
+import {RoomComponent} from "./room.component";
+import {RoomsService} from "./rooms.service";
+import {CommonModule} from "@angular/common";
+import {AuthService} from "./auth.service";
 
 // Application wide providers
 const APP_PROVIDERS = [
   ...APP_RESOLVER_PROVIDERS,
-  AppState
+  AppState,
+  RoomsService,
+  AuthService
 ];
 
 type StoreType = {
@@ -38,16 +44,13 @@ type StoreType = {
   bootstrap: [ AppComponent ],
   declarations: [
     AppComponent,
-    AboutComponent,
-    HomeComponent,
-    NoContentComponent,
-    XLarge
+    RoomComponent
   ],
   imports: [ // import Angular's modules
     BrowserModule,
+    CommonModule,
     FormsModule,
-    HttpModule,
-    RouterModule.forRoot(ROUTES, { useHash: true })
+    HttpModule
   ],
   providers: [ // expose our Services and Providers into Angular's dependency injection
     ENV_PROVIDERS,

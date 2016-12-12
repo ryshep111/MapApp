@@ -1,83 +1,60 @@
 /*
  * Angular 2 decorators and services
  */
-import { Component, ViewEncapsulation } from '@angular/core';
+import {Component, ViewEncapsulation, OnInit} from '@angular/core';
 
 import { AppState } from './app.service';
+import {RoomsService} from "./rooms.service";
+import {Room} from "./models/Room";
+import {AuthService} from "./auth.service";
 
 /*
  * App Component
  * Top Level Component
  */
 @Component({
+  moduleId: module.id,
   selector: 'app',
   encapsulation: ViewEncapsulation.None,
   styleUrls: [
-    './app.component.css'
+    'app.component.css'
   ],
-  template: `
-    <nav>
-      <span>
-        <a [routerLink]=" ['./'] ">
-          Index
-        </a>
-      </span>
-      |
-      <span>
-        <a [routerLink]=" ['./home'] ">
-          Home
-        </a>
-      </span>
-      |
-      <span>
-        <a [routerLink]=" ['./detail'] ">
-          Detail
-        </a>
-      </span>
-      |
-      <span>
-        <a [routerLink]=" ['./about'] ">
-          About
-        </a>
-      </span>
-    </nav>
-
-    <main>
-      <router-outlet></router-outlet>
-    </main>
-
-    <pre class="app-state">this.appState.state = {{ appState.state | json }}</pre>
-
-    <footer>
-      <span>WebPack Angular 2 Starter by <a [href]="url">@AngularClass</a></span>
-      <div>
-        <a [href]="url">
-          <img [src]="angularclassLogo" width="25%">
-        </a>
-      </div>
-    </footer>
-  `
+  templateUrl: 'app.component.html'
 })
-export class AppComponent {
-  angularclassLogo = 'assets/img/angularclass-avatar.png';
-  name = 'Angular 2 Webpack Starter';
-  url = 'https://twitter.com/AngularClass';
-
-  constructor(
-    public appState: AppState) {
+export class AppComponent implements OnInit {
+  rooms: Array<Room>;
+  signedIn = false;
+  constructor(private roomsService: RoomsService, private authService: AuthService) {
 
   }
 
   ngOnInit() {
-    console.log('Initial App State', this.appState.state);
+      gapi.load('auth2', function () {
+        gapi.auth2.init({client_id: '676353071347-colstnf99gb63t16s7jb60smhis420ja.apps.googleusercontent.com', fetch_basic_profile: false,
+          scope: 'https://www.googleapis.com/auth/calendar https://apps-apis.google.com/a/feeds/calendar/resource/ email',
+          });
+      });
+    //this.rooms = this.roomsService.rooms;
+  }
+
+  signIn() {
+    // gapi.auth.signIn({
+    //   clientid: '676353071347-colstnf99gb63t16s7jb60smhis420ja.apps.googleusercontent.com',
+    //   scope: 'https://www.googleapis.com/auth/calendar https://apps-apis.google.com/a/feeds/calendar/resource/ https://www.googleapis.com/auth/userinfo.email',
+    //   immediate: false,
+    //   cookiepolicy: 'single_host_origin',
+    //   approvalprompt: 'force',
+    //   accesstype: 'offline',
+    //   redirecturi: 'postmessage',
+    //   callback: (data) => this.authService.authenticate(data).then(()=>this.roomsService.getRooms().then((rooms)=>this.rooms = rooms))
+    // });
+    gapi.auth2.getAuthInstance().grantOfflineAccess({'redirect_uri': 'postmessage', 'prompt': 'consent'})
+      .then((data) => {
+        this.authService.authenticate(data).then(()=>this.roomsService.getRooms().then((rooms)=>this.rooms = rooms));
+      }, (error) => {
+        console.log(error);
+      });
   }
 
 }
 
-/*
- * Please review the https://github.com/AngularClass/angular2-examples/ repo for
- * more angular app examples that you may copy/paste
- * (The examples may not be updated as quickly. Please open an issue on github for us to update it)
- * For help or questions please contact us at @AngularClass on twitter
- * or our chat on Slack at https://AngularClass.com/slack-join
- */
