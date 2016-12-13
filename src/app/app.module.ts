@@ -22,13 +22,12 @@ import {RoomComponent} from "./room.component";
 import {RoomsService} from "./rooms.service";
 import {CommonModule} from "@angular/common";
 import {AuthService} from "./auth.service";
+import {ConfigService} from "./app.config";
 
 // Application wide providers
 const APP_PROVIDERS = [
   ...APP_RESOLVER_PROVIDERS,
-  AppState,
-  RoomsService,
-  AuthService
+  AppState
 ];
 
 type StoreType = {

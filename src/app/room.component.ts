@@ -24,8 +24,6 @@ export class RoomComponent implements OnChanges {
   ngOnChanges(): void {
     this.x = this.room.x;
     this.y = this.room.y;
-    this.height = this.room.height;
-    this.width = this.room.width;
     this.url = 'assets/images/' + this.room.name + '/' + this.room.name + '-1.jpg';
   }
 }

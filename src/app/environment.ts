@@ -3,9 +3,15 @@
 // rc2 workaround
 import { enableDebugTools, disableDebugTools } from '@angular/platform-browser';
 import { enableProdMode, ApplicationRef } from '@angular/core';
+import {AuthService} from "./auth.service";
+import {RoomsService} from "./rooms.service";
+import {ConfigService} from "./app.config";
 // Environment Providers
 let PROVIDERS: any[] = [
   // common env directives
+  RoomsService,
+  AuthService,
+  ConfigService
 ];
 
 // Angular debug tools in the dev console

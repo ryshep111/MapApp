@@ -1,12 +1,13 @@
 /*
  * Angular 2 decorators and services
  */
-import {Component, ViewEncapsulation, OnInit} from '@angular/core';
+import {Component, ViewEncapsulation, OnInit, ChangeDetectorRef} from '@angular/core';
 
 import { AppState } from './app.service';
 import {RoomsService} from "./rooms.service";
 import {Room} from "./models/Room";
 import {AuthService} from "./auth.service";
+import {ConfigService} from "./app.config";
 
 /*
  * App Component
@@ -24,33 +25,30 @@ import {AuthService} from "./auth.service";
 export class AppComponent implements OnInit {
   rooms: Array<Room>;
   signedIn = false;
-  constructor(private roomsService: RoomsService, private authService: AuthService) {
+  constructor(private config: ConfigService, private roomsService: RoomsService, private authService: AuthService, private cd: ChangeDetectorRef) {
 
   }
 
   ngOnInit() {
-      gapi.load('auth2', function () {
-        gapi.auth2.init({client_id: '676353071347-colstnf99gb63t16s7jb60smhis420ja.apps.googleusercontent.com', fetch_basic_profile: false,
-          scope: 'https://www.googleapis.com/auth/calendar https://apps-apis.google.com/a/feeds/calendar/resource/ email',
-          });
+    let config = this.config;
+    gapi.load('auth2', function () {
+      gapi.auth2.init({client_id: config.reservedApi.clientId, fetch_basic_profile: false,
+        scope: config.reservedApi.scopes,
       });
+    });
     //this.rooms = this.roomsService.rooms;
   }
 
   signIn() {
-    // gapi.auth.signIn({
-    //   clientid: '676353071347-colstnf99gb63t16s7jb60smhis420ja.apps.googleusercontent.com',
-    //   scope: 'https://www.googleapis.com/auth/calendar https://apps-apis.google.com/a/feeds/calendar/resource/ https://www.googleapis.com/auth/userinfo.email',
-    //   immediate: false,
-    //   cookiepolicy: 'single_host_origin',
-    //   approvalprompt: 'force',
-    //   accesstype: 'offline',
-    //   redirecturi: 'postmessage',
-    //   callback: (data) => this.authService.authenticate(data).then(()=>this.roomsService.getRooms().then((rooms)=>this.rooms = rooms))
-    // });
     gapi.auth2.getAuthInstance().grantOfflineAccess({'redirect_uri': 'postmessage', 'prompt': 'consent'})
       .then((data) => {
-        this.authService.authenticate(data).then(()=>this.roomsService.getRooms().then((rooms)=>this.rooms = rooms));
+        this.authService.authenticate(data)
+          .then(()=>this.roomsService.getRooms()
+            .then((rooms)=> {
+              this.rooms = rooms;
+              this.cd.detectChanges();
+            })
+          );
       }, (error) => {
         console.log(error);
       });

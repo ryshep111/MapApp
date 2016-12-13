@@ -1,24 +1,33 @@
 import {Injectable, OnInit} from '@angular/core';
 import {Room} from "./models/Room";
 import {Http} from "@angular/http";
+import {ConfigService} from "./app.config";
 
 @Injectable()
 export class RoomsService {
-rooms: Array<Room> = [];
-    constructor(private http: Http) {
-      //this.rooms.push(new Room('morgan', 'morgan', 100, 100, 200, 100, true));
+  rooms: Array<Room> = [];
+  constructor(private config: ConfigService, private http: Http) {
+    //this.rooms.push(new Room('morgan', 'morgan', 100, 100, 200, 100, true));
+  }
+  getRooms() {
+    if (this.rooms.length > 0) {
+      return Promise.resolve(this.rooms);
+    } else {
+      return this.http.get('api/google/resources').toPromise()
+        .then(rooms => rooms.json())
+        .then(rooms => {
+          this.rooms = rooms
+            .filter(room => this.config.rooms[room.name] != undefined)
+            .map(room => {
+              let newRoom = this.config.rooms[room.name];
+              newRoom.id = room.email;
+              this.http.post('api/room/' + newRoom.id,
+               {timeZone:"EST",preferences:{startDate: new Date(Date.now()), endDate: new Date(Date.now() + 100000) }}).toPromise();
+              return newRoom;
+            });
+          return this.rooms;
+      });
     }
-    getRooms() {
-      if (this.rooms.length > 0) {
-        return Promise.resolve(this.rooms);
-      } else {
-        return this.http.get('api/google/resources').toPromise().then(rooms => {
-          this.rooms = rooms.json();
-          return this.rooms
-        });
-      }
-    }
+  }
 }
 
-/*this.http.post('api/room/pointsourcellc.com_2d313331323531322d333830@resource.calendar.google.com',
- {"timeZone":"EST","preferences":{"startDate":"2016-12-12T12:00:00.000Z","endDate":"2016-12-13T00:00:00.000Z"}})*/
